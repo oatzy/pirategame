@@ -1,0 +1,26 @@
+
+uiElements.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+inventoryBackground
+  rotate: false
+  xy: 2, 2
+  size: 230, 100
+  orig: 230, 100
+  offset: 0, 0
+  index: -1
+selector
+  rotate: false
+  xy: 234, 2
+  size: 85, 85
+  orig: 85, 85
+  offset: 0, 0
+  index: -1
+pointBackground
+  rotate: false
+  xy: 321, 2
+  size: 250, 80
+  orig: 250, 80
+  offset: 0, 0
+  index: -1

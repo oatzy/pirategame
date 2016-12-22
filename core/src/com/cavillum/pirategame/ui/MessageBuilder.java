@@ -1,0 +1,168 @@
+package com.cavillum.pirategame.ui;
+
+import com.cavillum.pirategame.data.InteractionData;
+import com.cavillum.pirategame.objects.Grid;
+import com.cavillum.pirategame.objects.Player;
+
+public class MessageBuilder {
+	
+	public String build(String attacker, String defender, int apoints, int dpoints, Grid.sqType type){
+		// when a (non-local) player attacks another
+		switch(type){
+		case sqKill:
+			return attacker+" killed "+defender;
+		case sqGift:
+			return attacker+" gifted 1000 points to "+defender;
+		case sqRob:
+			return attacker+" robbed "+dpoints+" points from "+defender;
+		case sqSwap:
+			return attacker+" swapped "+apoints+" points for "+defender+"'s "+dpoints;
+		case sqPeek:
+			if (attacker == "you") return defender+" has "+dpoints+" points";
+			return attacker+" peeked at "+defender+"'s points - "+defender+" has "+dpoints+" points";
+		case sqChoose:
+			return buildChoose(attacker, apoints); // grid index, not actually points
+		default:
+			return "";
+		}
+	}
+	
+	public String build(String attacker, String defender, int apoints, int dpoints,
+			Grid.sqType type, Player.dfType defence){
+		// When an non-local player attacks a target who uses a defence
+		switch(defence){
+		case dfNone:
+			return build(attacker, defender, apoints, dpoints, type);
+		case dfShield:
+			return shield(attacker, defender, type);
+		case dfMirror:
+			return mirror(attacker, defender, apoints, dpoints, type);
+		default:
+			return "";
+		}
+	}
+	
+	public String build(InteractionData data){
+		return build(data.getSource(), data.getTarget(), data.getSourcePoints(), data.getTargetPoints(),
+				data.getType(), data.getDefenceType());
+	}
+	
+	private String shield(String attacker, String defender, Grid.sqType type){
+		// when a non-local player attacks a player who uses a shield
+		String temp = attacker+" tried to ";
+		switch(type){
+		case sqRob:
+			return temp+"rob "+defender;
+		case sqKill:
+			return temp+"kill "+defender;
+		case sqSwap:
+			return temp+"swap points with "+defender;
+		case sqPeek:
+			return temp+"peek at "+defender+"'s points";
+		default:
+			return "";
+		}
+	}
+	
+	private String mirror(String attacker, String defender, int apoints, int dpoints, Grid.sqType type){
+		// when a non-local player attacks a play who uses a mirror
+		return defender+" used their mirror - "+build(defender, attacker, dpoints, apoints, type);
+	}
+	
+	public String buildLocalAttack(String attacker, int apoints, int dpoints, Grid.sqType type){
+		// Notification for when a player successfully attacks the local player
+		switch(type){
+		case sqKill:
+			return attacker+" killed you";
+		case sqGift:
+			return attacker+" gifted 1000 points to you";
+		case sqRob:
+			return attacker+" robbed "+dpoints+" points from you";
+		case sqSwap:
+			return attacker+" swapped "+apoints+" points for your "+dpoints;
+		case sqPeek:
+			return attacker+" peeked at your points";
+		default:
+			return "";
+		}
+	}
+	
+	public String buildLocalDefence(InteractionData data){
+		// when a player attacks the local player, who uses a defence
+		switch(data.getDefenceType()){
+		case dfNone:
+			return buildLocalAttack(data.getSource(), data.getSourcePoints(), 
+					data.getTargetPoints(), data.getType());
+		case dfMirror:
+			return build("you", data.getSource(), data.getTargetPoints(),
+					data.getSourcePoints(), data.getType());
+		case dfShield:
+		default:
+			return "";
+		}
+	}
+	
+	public String buildOpponentDefence(String defender, int apoints, int dpoints, Grid.sqType type, Player.dfType defence){
+		// when local player attacks a player who uses a defence
+		switch(defence){
+		case dfShield:
+			return defender+" used their shield";
+		case dfMirror:
+			return defender+" used their mirror - "+buildLocalAttack(defender, dpoints, apoints, type);
+		case dfNone:
+			// disable this condition for more notifications
+			//if (type == Grid.sqType.sqPeek)	
+			return build("you", defender, apoints, dpoints, type);
+		default:
+			return "";
+		}
+	}
+	
+	public String buildOpponentDefence(InteractionData data){
+		return buildOpponentDefence(data.getTarget(), data.getSourcePoints(), 
+				data.getTargetPoints(), data.getType(), data.getDefenceType());
+	}
+	
+	public String buildDefenceMessage(String attacker, Grid.sqType type){
+		// Notification text is defence selector
+		switch(type){
+		case sqKill:
+			return attacker+" is tring to kill you!";
+		case sqRob:
+			return attacker+" is trying to rob you!";
+		case sqSwap:
+			return attacker+" is trying to swap points with you!";
+		case sqPeek:
+			return attacker+" is trying to peek at your points!";
+		default:
+			return "";
+		}
+	}
+	
+	public String buildAttackQuestion(Grid.sqType type){
+		// Notfication text is attack target selector
+		String message = "Who do you want to";
+		switch(type){
+		case sqKill:
+			return message+" kill?";
+		case sqRob:
+			return message+" rob?";
+		case sqSwap:
+			return message+" swap points with?";
+		case sqGift:
+			return message+" gift 1000 points to?";
+		case sqPeek:
+			return "Whose points do you want to peek at?";
+		default:
+			return "";
+		}
+	}
+	
+	public String buildChoose(String player, int index){
+		// when a non-local player chooses the next square
+		// converts numerical index into grid reference
+		return (player+" chose the next square - "
+				+Character.toString("ABCDEFG".charAt(index%7))+(1+index/7));
+	}
+
+}
