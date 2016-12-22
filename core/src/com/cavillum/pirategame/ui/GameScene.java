@@ -8,29 +8,26 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.cavillum.pirategame.PirateGame;
 import com.cavillum.pirategame.TurnHandler;
-import com.cavillum.pirategame.objects.ComputerPlayer;
+import com.cavillum.pirategame.helpers.LevelBuilder;
 import com.cavillum.pirategame.objects.Grid;
 import com.cavillum.pirategame.objects.Player;
 
 public class GameScene extends BaseScene{
 	
 	public enum State {Loading, ArrangeItems, ItemSwap, CollectItem,
-						ShowPopup, Waiting, ChooseNext, GameOver};
+						ShowPopup, Waiting, ChooseNext, GameOver,
+						Buried, Select, Reveal};
 	
-	private static final Vector2 gridOrigin = new Vector2(82,1052); // location of grid top left corner
-	private static final int itemSize = 85; // size of item images
+	private static final Vector2 gridOrigin = PirateGame.layout.origin; // location of grid top left corner
+	private static final int itemSize = 102; // size of item images
 	
 	private PirateGame _parent = null;
 	private SpriteBatch batch = null;
 	private State _state;
 	private GameStages _stages;
-	private Stage _stage;
-	private Dialog _dialog;
 	
 	private InputMultiplexer _inputs;
 
@@ -48,8 +45,13 @@ public class GameScene extends BaseScene{
 	private double _animTime;
 	private double _animTotal;
 	
+	private AnimationHelper _animate;
+	
 	// Assets
-	private GameAssetHelper _assetHelper;	
+	private GameAssetHelper _assetHelper;
+	
+	private boolean _started = false;
+	private boolean _quit = false;
 	
 	
 	// MAIN //
@@ -58,8 +60,8 @@ public class GameScene extends BaseScene{
 		super(game);
 		_parent = game;
 		batch = _parent.getSpriteBatch();
+		_assetHelper = new GameAssetHelper(_parent.getAssetManager());
 		_stages = new GameStages(this);
-		_stage = new Stage(_parent.getViewport());
 		_state = State.Loading;
 		
 		_inputs = new InputMultiplexer();
@@ -72,10 +74,9 @@ public class GameScene extends BaseScene{
 		
 		_turnHandler = new TurnHandler(this);
 		_turnHandler.setLocalPlayer(_player);
-		_turnHandler.addComputerPlayer(new ComputerPlayer("Sparrow", true));
-		_turnHandler.addComputerPlayer(new ComputerPlayer("Barbosa", true));
-		_turnHandler.addComputerPlayer(new ComputerPlayer("Turner"));
-		_turnHandler.addComputerPlayer(new ComputerPlayer("Swan"));
+		
+		// load AI players from memory
+		_turnHandler.loadAiPlayers();
 		
 		// Item Moving
 		_selectedSquare = _destSquare = -1;
@@ -84,18 +85,18 @@ public class GameScene extends BaseScene{
 		_animTime = 0;
 		_animTotal = 0.1; // animation duration
 		
-		_assetHelper = new GameAssetHelper(_parent.getAssetManager());
-		
-		//Gdx.app.log("Game", "created");
 	}
 	
 	public void reset(){
 		_player.reset();
 		_turnHandler.reset();
-		if (_dialog != null) _dialog.clear();
-		if (_stage != null) _stage.clear();
+		if (_animate != null) _animate.reset();
+		_stages.getStage().clear();
 		_state = State.Loading;
 		_message = "";
+		_started = false;
+		_quit = false;
+		PirateGame.layout.showIndicator(false);
 	}
 	
 	@Override
@@ -105,10 +106,13 @@ public class GameScene extends BaseScene{
 			Gdx.input.setInputProcessor(_inputs);
 		} else Gdx.input.setInputProcessor(this);
 		Gdx.input.setCatchBackKey(true);
+		// on first call to show, ads take time to load
+		if (!hasStarted() && PirateGame.adsEnabled) PirateGame.googleServices.showAds(true);
 	}
 	
 	@Override
 	public void hide(){
+		if (!hasStarted() && PirateGame.adsEnabled) PirateGame.googleServices.showAds(false);
 		//unload();
 	}
 	
@@ -119,27 +123,36 @@ public class GameScene extends BaseScene{
 	
 	@Override
 	public void handleBackPress(){
-		_parent.setScreen(_parent.menuScene);
+		// Prevent local from quitting when they are killed
+		if (PirateGame.levels.getGameType() == LevelBuilder.GameType.Knockout
+				&& _turnHandler.isDead(_player.getID()) && _state != State.GameOver) return;
+		//_parent.setScreen(_parent.menuScene);
+		if (doShowQuit() && _state != State.GameOver){
+			if (_state == State.ShowPopup && _stages.isShown(GameStages.Popup.Quit)) return;
+			_stages.showQuitDialog(_state);
+			_state = State.ShowPopup;
+		}
+		else _parent.setScreen(_parent.menuScene);
 	}
 	
-	public void changeState(State state){
-		_state = state;
-		_message = "";
-	}
 	
-	public void setMessage(String message){
-		_message = message;
-	}
+	// On Actions //
 	
 	public void onStart(){
-		_state = State.CollectItem;
-		_stage.clear();
+		if (PirateGame.levels.getGameType() == LevelBuilder.GameType.Buried)
+			_state = State.Buried;
+		else if (PirateGame.levels.getGameType() == LevelBuilder.GameType.Choose)
+			_state = State.Select;
+		else _state = State.CollectItem;
 		_message = "";
+		_started = true;
+		updateSideBar();
+		// TODO - increment plays count (to track quitting)
+		// hide ads
+		if (PirateGame.adsEnabled) PirateGame.googleServices.showAds(false);
 	}
 	
 	public void onDialogOK(){
-		// may need to alter
-		_stage.clear();
 		_turnHandler.iterate();
 	}
 	
@@ -148,12 +161,10 @@ public class GameScene extends BaseScene{
 	}
 	
 	public void onAttack(String target){
-		_stage.clear();
 		_turnHandler.localAttack(target);
 	}
 	
 	public void onDefend(Player.dfType defence){
-		_stage.clear();
 		_turnHandler.localDefence(defence);
 	}
 	
@@ -161,52 +172,192 @@ public class GameScene extends BaseScene{
 		// Game Over - show score board
 		_message = "Game Over!";
 		_state = State.GameOver;
-		_dialog = _stages.getScoreBoard(_turnHandler.getScoreBoard());
-		_dialog.show(_stage);
+		_stages.showScoreBoard(_turnHandler.getScoreBoard());
+		if (PirateGame.layout.hasSideBar())
+			PirateGame.layout.getSideBar().buildHelp(State.GameOver, true);
+		
+		// Wins bonus
+		if (_turnHandler.localWin()) onWin();
+		else onLose();
+		
+		// High Score (?)
+		if (PirateGame.save.isHighScore(_player.getScore()))
+			onHighScore();
+		
+		// Submit to Google
+		PirateGame.googleServices.submitScore(_player.getScore());
+		PirateGame.googleServices.submitLevelScore(_player.getScore());
+		PirateGame.googleServices.updateAchievements(_player.getScore(), _turnHandler.localWin());
 	}
 	
-	public boolean hasStarted(){
-		return (_state != State.Loading && _state != State.ArrangeItems 
-					&& _state != State.ItemSwap);
+	public void onHighScore(){
+		// TODO - stop these extra points adding to points on screen
+		if (PirateGame.save.getPlays()<1) return;
+		_player.addBonus(50000);
+		_stages.showMessagePopup("New High Score!\nHave a bonus 50,000 points.");
 	}
 	
-	public boolean canContinue(){
-		return (hasStarted() && _state != State.GameOver);
+	public void onWin(){
+		int wins = PirateGame.save.getWins() + 1;
+		if (wins % 10 == 0){
+			_player.addBonus(25000);
+			_stages.showMessagePopup(wins+" wins!\nHave a bonus 25,000 points.");
+		}
+		else if (wins % 5 == 0){
+			_player.addBonus(10000);
+			_stages.showMessagePopup(wins+" wins!\nHave a bonus 10,000 points.");
+		}
 	}
+	
+	public void onLose(){
+		int loses = PirateGame.save.getLoses() + 1;
+		if (loses % 10 == 0){
+			_player.addBonus(5000);
+			_stages.showMessagePopup("Ouch, "+loses+" losses...\nHere's 5,000 sympathy points.");
+		}
+	}
+	
+	
+	// Show UI Elements //
 	
 	public void showChooseNext(){
 		if (_turnHandler.getQueue().getRound()<48){
+			// prevent problems when Choose is the last item
 			_state = State.ChooseNext;
-			_message = "Choose next square...";
-		// prevent problems when Choose is the last item
+			_message = "Tap the item you want next...";
+			if (PirateGame.layout.hasSideBar())
+				PirateGame.layout.getSideBar().buildHelp(State.ChooseNext, true);
+			// TODO - go back to previous SB window
 		} else _turnHandler.iterate();
 	}
 	
 	public void showAttackDialog(ArrayList<String> opponents, Grid.sqType type){
 		_state  = State.ShowPopup;
-		_dialog = _stages.getAttackDialog(opponents, type);
-		_dialog.show(_stage);
+		_stages.showAttackDialog(opponents, type);
+		updateSideBar();
 	}
 	
-	public void showDefendDialog(String attacker, Grid.sqType type, ArrayList<Player.dfType> defences){
+	public void showDefendDialog(String attacker, Grid.sqType type, 
+									ArrayList<Player.dfType> defences){
 		_state = State.ShowPopup;
-		_dialog = _stages.getDefendDialog(attacker, type, defences);
-		_dialog.show(_stage);
+		_stages.showDefendDialog(attacker, type, defences);
+		updateSideBar();
 	}
 	
 	public void showNotification(String message){
 		_state = State.ShowPopup;
-		_dialog = _stages.getDialog(message);
-		_dialog.show(_stage);
+		_stages.showDialog(message);
+	}
+	
+	public void showHistory(){
+		PirateGame.layout.showIndicator(false);
+		if (PirateGame.layout.hasSideBar()){
+			PirateGame.layout.getSideBar().buildHistory(_turnHandler.getHistory());
+			return;
+		}
+		_stages.showHistoryDialog(_turnHandler.getHistory(), _state);
+		_state = State.ShowPopup;
+	}
+	
+	public void showPlayers(){
+		if (PirateGame.layout.hasSideBar()){
+			if (PirateGame.levels.getGameType() == LevelBuilder.GameType.Knockout)
+				PirateGame.layout.getSideBar()
+					.buildPlayers(_turnHandler.getAlive(), _turnHandler.getDeadPlayers());
+			else
+				PirateGame.layout.getSideBar().buildPlayers(_turnHandler.getLocalOpponents());
+			return;
+		}
+		if (PirateGame.levels.getGameType() == LevelBuilder.GameType.Knockout)
+			_stages.showPlayerDialog(_turnHandler.getAlive(), _turnHandler.getDeadPlayers(),
+					_state);
+		else
+			_stages.showPlayerDialog(_turnHandler.getLocalOpponents(), _state);
+		_state = State.ShowPopup;
+	}
+	
+	public void showHelp(){
+		if (PirateGame.layout.hasSideBar()){
+			PirateGame.layout.getSideBar().buildHelp(_state);
+			return;
+		}
+		_stages.showHelpDialog(_state);
+		_state = State.ShowPopup;
+	}
+	
+	public void updateSideBar(){
+		if (!PirateGame.layout.hasSideBar()) return;
+		switch(PirateGame.layout.getSideBarType()){
+		case History:
+			PirateGame.layout.getSideBar().buildHistory(_turnHandler.getHistory());
+			break;
+		case Players:
+			if (PirateGame.levels.getGameType() == LevelBuilder.GameType.Knockout)
+				PirateGame.layout.getSideBar()
+					.buildPlayers(_turnHandler.getAlive(), _turnHandler.getDeadPlayers());
+			else
+				PirateGame.layout.getSideBar().buildPlayers(_turnHandler.getLocalOpponents());
+			break;
+		case Help:
+			PirateGame.layout.getSideBar().buildHelp(_state);
+			break;
+		default:
+			break;
+		}
+	}
+	
+	
+	// Misc. Helper Functions //
+	
+	public void changeState(State state){
+		_state = state;
+		updateSideBar();
+		//_message = "";
+	}
+	
+	public String getMessage(){
+		return _message;
+	}
+	
+	public void setMessage(String message){
+		_message = message;
+	}
+	
+	public boolean hasStarted(){
+		// TODO - change for other modes so not started until square is tapped
+		return _started;
+	}
+	
+	public boolean doShowQuit(){
+		return _quit;
 	}
 	
 	public Player getPlayer(){
 		return _player;
 	}
 	
+	public Grid.sqType getCurrent(){
+		return _player.getType(_turnHandler.getCurrentSquare());
+	}
+	
+	public GameStages.Popup getTopPopup(){
+		return _stages.getTopPopup();
+	}
+	
 	public Viewport getViewport(){
 		return _parent.getViewport();
 	}
+	
+	public AnimationHelper getAnimator(){
+		return _animate;
+	}
+	
+	public GameAssetHelper getAssetHelper(){
+		return _assetHelper;
+	}
+
+	
+	// Updating & Rendering //
 	
 	public void update(float delta){
 		
@@ -214,17 +365,38 @@ public class GameScene extends BaseScene{
 		if (_state == State.Loading) {
 			// If loading finished
 			if (_parent.getAssetManager().update()) {
+				
 				// Assign Resources
 				_assetHelper.assignResources();
-				// Set Stage
-				_stage = _stages.getArrangeStage();
+				
+				// create animation helper
+				_animate = new AnimationHelper(_parent.getSpriteBatch(), _assetHelper.pfont);
+				
 				// Set Inputs
 				_inputs.addProcessor(this);
-				_inputs.addProcessor(_stage);
+				_inputs.addProcessor(_stages.getStage());
 				Gdx.input.setInputProcessor(_inputs);
+				
+				// create sidebar (if applicable)
+				if (PirateGame.layout.hasSideBar()) 
+					PirateGame.layout.createSideBar(_assetHelper);
+				
+				if (!(PirateGame.levels.getGameType() == LevelBuilder.GameType.Buried
+						|| PirateGame.levels.getGameType() == LevelBuilder.GameType.Choose))
+								
 				// Change to Arrange State
-				_state = State.ArrangeItems;
-				_message = "Drag items to rearrange...";
+				{
+					// Set Stage
+					_stages.showArrangeStage();
+					_state = State.ArrangeItems;
+					//_message = "Drag items to rearrange...";
+					_message = "Arrange the items however you like...";
+				} 
+				
+				else onStart();
+				
+				_stages.showSideBar();
+				
 			}
 			return;
 		} // END LOADING
@@ -240,7 +412,10 @@ public class GameScene extends BaseScene{
 				_destSquare = -1;
 			}
 		} // END ITEM SWAP
-		//Gdx.app.log("Game", "updated");
+		
+		//if (_state == State.Buried) _message = "Tap a sand mound to dig for treasure...";
+		//if (_state == State.Select) _message = "Tap any item to collect it...";
+		
 	}
 	
 	@Override
@@ -249,98 +424,120 @@ public class GameScene extends BaseScene{
 		
 		// LOADING STATE
 		if (_state == State.Loading){
-			// display 'loading' message
-			_assetHelper.font.draw(batch, "Loading...", (PirateGame.VIRTUAL_WIDTH-420) / 2, 
-					(PirateGame.VIRTUAL_HEIGHT-42) / 2);
+			// don't draw anything or it'll crash
 			return;
 		}
 		
-		// Background image
-		if (_assetHelper.imgBoard != null) batch.draw(_assetHelper.imgBoard, 0, 0);
+		// UI elements
+		PirateGame.layout.drawUiElements(_assetHelper);
 		
 		// Draw Grid
 		drawGrid();
 		
-		// After Start - UI Elements
+		// After Start - Animations
 		if (hasStarted()){
 			
-			// Points
-			batch.draw(_assetHelper.pointsBG, 435, 1165);
-			_assetHelper.font.draw(batch, ""+_player.getPoints(), 495, 1225);
+			// defences
+			_animate.drawDefences();
 			
-			// Bank
-			_assetHelper.font.draw(batch, "Bank", 405, 350);
-			batch.draw(_assetHelper.pointsBG, 395, 210);
-			_assetHelper.font.draw(batch, ""+_player.getBank(), 460, 270);
-			
-			// Inventory
-			_assetHelper.font.draw(batch, "Inventory", 75, 350);
-			batch.draw(_assetHelper.inventoryBG, 65, 200);
-			if (_player.hasShield()){
-				batch.draw(_assetHelper.imgShield, 90, 208);
-				if (_player.hasMirror()) batch.draw(_assetHelper.imgMirror, 190, 208);
-			} else if (_player.hasMirror()) batch.draw(_assetHelper.imgMirror, 90, 208);
+			// Floating points add
+			_animate.drawFloaters();
 		}
 		
 		// COLLECT ITEM STATE
 		if (_state == State.CollectItem){
+			
 			// show item selector
 			_sqCoord = getCoords(_turnHandler.getCurrentSquare());
 			batch.draw(_assetHelper.selector, _sqCoord.x, _sqCoord.y);
+			
+			// Throb current icon
+			TextureRegion img = _assetHelper.getItemImage(_player.getType(
+					_turnHandler.getCurrentSquare()));
+			batch.draw(img, _sqCoord.x, _sqCoord.y, itemSize/2, itemSize/2,
+					itemSize, itemSize, (float)_animate.throb(), (float)_animate.throb(), 0);
+			
 		} // END COLLECT
-		
-		// Message Bar
-		_assetHelper.font.draw(batch, _message, 20, 65);
 		
 		// Draw Stage (buttons, pop-ups, etc.)
 		batch.end(); // grid doesn't draw without this
-		if (_stage != null) _stage.draw();
+		
+		_stages.render();
+		
 		batch.begin();
-		//Gdx.app.log("Game", "rendered");
+		
 	}
 	
 	public void drawGrid(){
+		
 		TextureRegion img = null;
 		float imgX, imgY;
+		double rotate = 0;
+		
+		if (_state == State.ArrangeItems || _state == State.ChooseNext
+				|| _state == State.Select)
+				rotate = (float)_animate.wiggle();
 		
 		// Draw grid items
 		for(int i=0; i<49; i++){
-			img = _assetHelper.getItemImage(_player.getType(i));
+			
+			// Item position
+			_sqCoord = getCoords(i);
+			
+			// grid squares
+			batch.draw(_assetHelper.gridSq, _sqCoord.x, _sqCoord.y);
+			
+			if (PirateGame.levels.getGameType() == LevelBuilder.GameType.Buried
+					&& _state != State.Reveal && !_player.getGrid().isEmpty(i))
+				img = _assetHelper.burySq;
+			else img = _assetHelper.getItemImage(_player.getType(i));
 			
 			if (img != null){
 				// if the item isn't being moved
 				if (!((_state == State.ArrangeItems && i == _selectedSquare) ||
-						(_state == State.ItemSwap && i == _destSquare) )){
-					// Item position
-					_sqCoord = getCoords(i);
-					// Draw
-					batch.draw(img, _sqCoord.x, _sqCoord.y);
+						(_state == State.ItemSwap && i == _destSquare) ||
+						(_state == State.CollectItem && i == _turnHandler.getCurrentSquare())
+						)){
+					
+					// Draw wiggler
+					if (_state == State.ArrangeItems || _state == State.ChooseNext){
+						batch.draw(img, _sqCoord.x, _sqCoord.y, itemSize/2, itemSize/2,
+								itemSize, itemSize, 1, 1, (float) rotate);
+					}
+					// Draw static
+					else batch.draw(img, _sqCoord.x, _sqCoord.y);
 				}
 			} 
 			img = null;	
 		}
 		
 		// Moved items - this is separate so they're drawn on top of all others
+		
 		if (_state == State.ArrangeItems && _selectedSquare != -1){
 			// item is being dragged
 			img = _assetHelper.getItemImage(_player.getType(_selectedSquare));
 			imgX = _mousePos.x-(itemSize/2);
 			imgY = _mousePos.y-(itemSize/2);
 			batch.draw(img, imgX, imgY);
-		} else if (_state == State.ItemSwap && _destSquare != -1){
+		} 
+		
+		else if (_state == State.ItemSwap && _destSquare != -1){
 			// animate swapped item
 			img = _assetHelper.getItemImage(_player.getType(_destSquare));
 			_sqCoord = animateSwap(_selectedSquare, _destSquare, _animTime, _animTotal);
 			batch.draw(img, _sqCoord.x, _sqCoord.y);
 		}
 		img = null;
-		//Gdx.app.log("Game", "Grid Drawn");
 	}
+	
+	
+	// Coordinate Helper //
 
 	public int getGridIndex(int x, int y){
 		// get grid index for coords (x,y)
 		if (x>=gridOrigin.x && y <= gridOrigin.y){ // to avoid rounding issues 
-			int gridX = (int)(x-gridOrigin.x)/itemSize;
+			
+			int gridX = (int)(x-(gridOrigin.x))/itemSize;
 			int gridY = (int)(gridOrigin.y-y)/itemSize;
 			
 			if (gridX < 7 && gridY < 7) return (7*gridY + gridX);
@@ -362,6 +559,12 @@ public class GameScene extends BaseScene{
 		return new Vector2(x, y);
 	}
 	
+	public void setAnimTotal(int index1, int index2){
+		int dy = (index1/7)-(index2/7);
+		int dx = (index1%7)-(index2%7);
+		_animTotal = 0.08*Math.pow((dx*dx + dy*dy), 0.25);
+	}
+
 	
 	// TOUCH HANDLING //
 	
@@ -373,7 +576,21 @@ public class GameScene extends BaseScene{
 	        _parent.unproject(_mousePos);
 	        
 	        int index = getGridIndex((int)_mousePos.x, (int)_mousePos.y);
-	        //Gdx.app.log("Game", ""+index);
+	        
+	        // Konami
+	        if (index != -1 && !hasStarted())
+	        	if (PirateGame.cc.cheat(index)) {
+	        		_message = "Unlimited Lives Unlocked!";
+	        		if (PirateGame.layout.hasSideBar() 
+	        				&& PirateGame.layout.getSideBarType() == LayoutHandler.SideType.Help)
+	        			PirateGame.layout.getSideBar().buildHelp(_state, "Unlimited Lives Unlocked!");
+	        		PirateGame.googleServices.unlockKonami();
+	        	}
+	        
+	        // Help
+	        if (PirateGame.layout.helpClicked(_mousePos.x, _mousePos.y)
+						&& !_stages.isShown(GameStages.Popup.Help)
+						&& !_stages.isShown(GameStages.Popup.Quit)) showHelp();
 	        
 	        // ARRANGE GRID STATE
  			if (_state == State.ArrangeItems){
@@ -389,23 +606,94 @@ public class GameScene extends BaseScene{
  				return false;
  			} // END ARRANGE GRID
  			
+ 			// REVEALED STATE
+ 			if (_state == State.Reveal) {
+ 				_turnHandler.iterate();
+ 				return true;
+ 			}
+ 			
+ 			// CHOOSE NEXT STATE
+ 			if (_state == State.ChooseNext){
+ 				if (index != -1 && !_player.getGrid().isEmpty(index)){
+ 					_turnHandler.getQueue().addNext(index);
+ 					//_message = "";
+ 					_message = _turnHandler.getLastEvent();
+ 					_turnHandler.iterate();
+ 				}
+ 				return true;
+ 			} // END CHOOSE NEXT
+ 			
+ 			
+ 			// History, Players
+ 			if (_state != State.GameOver){
+ 				
+ 				if ((PirateGame.layout.notifClicked(_mousePos.x, _mousePos.y) 
+ 						&& !_stages.isShown(GameStages.Popup.History)
+ 						&& !_stages.isShown(GameStages.Popup.Quit))) showHistory();
+ 				
+ 				if (PirateGame.layout.playersClicked(_mousePos.x, _mousePos.y)
+ 						&& !_stages.isShown(GameStages.Popup.Players)
+ 						&& !_stages.isShown(GameStages.Popup.Quit)) showPlayers();
+ 			}
+ 			
+ 			
+ 			// BURIED STATE
+ 			if (_state == State.Buried && index != -1){
+ 				_quit = true;
+ 				if (!_player.getGrid().isEmpty(index)){
+ 					_turnHandler.setCurrentSquare(index);
+ 					changeState(State.CollectItem);
+ 				}
+ 				return true;
+ 			} // END BURIED STATE
+ 			
+ 			
+ 			// SELECT STATE
+ 			if (_state == State.Select && index != -1){
+ 				_quit = true;
+ 				if (!_player.getGrid().isEmpty(index)){
+ 					_turnHandler.setCurrentSquare(index);
+ 					
+ 					// set floating point text (where appt)
+					_animate.setPointsText(_player.getType(index), _player.getPoints());
+					
+					// defences
+					if (_player.getType(index) == Grid.sqType.sqShield){
+						_animate.addDefence(_assetHelper.imgShield, Player.dfType.dfShield);
+					}
+					if (_player.getType(index) == Grid.sqType.sqMirror){
+						_animate.addDefence(_assetHelper.imgMirror, Player.dfType.dfMirror);
+					}
+					
+					// do item action
+					_turnHandler.localCollect();
+ 				}
+ 				return true;
+ 			} // END SELECT STATE
+ 			
+ 			
 			// COLLECT ITEM STATE
-			if (_state == State.CollectItem){ 
+			if (_state == State.CollectItem && index != -1){
+				_quit = true;
 				if (index == _turnHandler.getCurrentSquare()){
+					
+					// set floating point text (where appt)
+					_animate.setPointsText(_player.getType(index), _player.getPoints());
+					
+					// defences
+					if (_player.getType(index) == Grid.sqType.sqShield){
+						_animate.addDefence(_assetHelper.imgShield, Player.dfType.dfShield);
+					}
+					if (_player.getType(index) == Grid.sqType.sqMirror){
+						_animate.addDefence(_assetHelper.imgMirror, Player.dfType.dfMirror);
+					}
+					
+					// do item action
 					_turnHandler.localCollect();
 				}
 				return true;
 			} // END COLLECT ITEM
 			
-			// CHOOSE NEXT STATE
-			if (_state == State.ChooseNext){
-				if (index != -1 && !_player.getGrid().isEmpty(index)){
-					_turnHandler.getQueue().addNext(index);
-					_message = "";
-					_turnHandler.iterate();
-				}
-				return true;
-			} // END CHOOSE NEXT
 		}
 		return false;
 	}
@@ -422,19 +710,24 @@ public class GameScene extends BaseScene{
 	        // ARRANGE GRID STATE
 	        if (_state == State.ArrangeItems && index != -1){
 	        	if (_selectedSquare != -1 && _selectedSquare != index){
+	        		
 	        		// Swap items
 	        		_player.getGrid().swap(_selectedSquare, index);
+	        		
 	        		// animate swap
 	        		if (_player.getGrid().isEmpty(index)){
+	        			
 	        			// don't need to animate empty square swap
 	        			_selectedSquare = _destSquare = -1;
-	        		} else{
+	        		} 
+	        		else{
+	        			setAnimTotal(_selectedSquare,index);
 		        		_destSquare = _selectedSquare;
 		        		_selectedSquare = index;
 		        		_state = State.ItemSwap;
 	        		}
 	        	} else{
-	        		// Else return to original square
+	        		// else return to original square
 	        		_selectedSquare = -1; // item 'dropped'
 	        	}
 	        	return false;
@@ -462,3 +755,4 @@ public class GameScene extends BaseScene{
 	}
 
 }
+

@@ -1,0 +1,26 @@
+
+menu-atlas.png
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+win-bg
+  rotate: false
+  xy: 2, 2
+  size: 260, 100
+  orig: 260, 100
+  offset: 0, 0
+  index: -1
+score-bg
+  rotate: false
+  xy: 264, 2
+  size: 260, 100
+  orig: 260, 100
+  offset: 0, 0
+  index: -1
+gplus-btn
+  rotate: false
+  xy: 526, 2
+  size: 248, 87
+  orig: 248, 87
+  offset: 0, 0
+  index: -1

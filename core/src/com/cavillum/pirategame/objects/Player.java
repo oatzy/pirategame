@@ -15,6 +15,7 @@ public class Player{
 	private Grid _grid;
 	private int _points, _bank;
 	private boolean _mirror, _shield; // inventory/defences
+	private int _mCount, _sCount; // number of mirrors, shields. Future feature...
 	
 	public Player(String uid){
 		_grid = new Grid();
@@ -24,7 +25,7 @@ public class Player{
 	
 	public Player(){
 		_grid = new Grid();
-		_id = "default";
+		_id = "You";
 		reset();
 	}
 	
@@ -61,6 +62,10 @@ public class Player{
 		_points = 0;
 	}
 	
+	public void addBonus(int bonus){
+		_points += bonus;
+	}
+	
 	public int getScore(){
 		return _points + _bank;
 	}
@@ -69,12 +74,22 @@ public class Player{
 		return _grid.getType(index);
 	}
 	
+	public int getShieldCount(){
+		return _sCount;
+	}
+	
+	public int getMirrorCount(){
+		return _mCount;
+	}
+	
 	public void reset(){
 		_grid.generate();
 		_points = 0;
 		_bank = 0;
 		_mirror = false;
 		_shield = false;
+		_mCount = 0;
+		_sCount = 0;
 	}
 	
 	public boolean hasMirror(){
@@ -90,11 +105,15 @@ public class Player{
 	}
 	
 	public void useShield(){
-		_shield = false;
+		if (_sCount > 0) _sCount--;
+		if (_sCount > 0) _shield = true;
+		else _shield = false;
 	}
 	
 	public void useMirror(){
-		_mirror = false;
+		if (_mCount > 0) _mCount--;
+		if (_mCount > 0) _mirror = true;
+		else _mirror = false;
 	}
 	
 	public void useDefence(Player.dfType defence){
@@ -107,7 +126,7 @@ public class Player{
 	}
 	
 	public boolean canDefend(Grid.sqType type){
-		if (_grid.isAttack(type)){
+		if (Grid.isAttack(type)){
 			if (_shield) return true;
 			if (_mirror && type != Grid.sqType.sqSwap) return true;
 		}
@@ -115,7 +134,7 @@ public class Player{
 	}
 	
 	public boolean canMirror(Grid.sqType type){
-		return (_mirror && _grid.isAttack(type) && type != Grid.sqType.sqSwap);
+		return (_mirror && Grid.isAttack(type) && type != Grid.sqType.sqSwap);
 	}
 	
 	public boolean canMirror(int index){
@@ -132,7 +151,7 @@ public class Player{
 	
 	public ArrayList<dfType> getDefences(Grid.sqType type){
 		ArrayList<dfType> temp = new ArrayList<dfType>();
-		if (_grid.isAttack(type)){
+		if (Grid.isAttack(type)){
 			if (_shield) temp.add(dfType.dfShield);
 			if (_mirror && type != Grid.sqType.sqSwap) temp.add(dfType.dfMirror);
 		}
@@ -175,9 +194,18 @@ public class Player{
 			break;
 		case sqMirror:
 			_mirror = true;
+			_mCount++;
 			break;
 		case sqShield:
 			_shield = true;
+			_sCount++;
+			break;
+		// Specials
+		case sq10000:
+			_points += 10000;
+			break;
+		case sqHalf:
+			_points = _points/2;
 			break;
 		default:
 			break;
@@ -186,7 +214,6 @@ public class Player{
 	
 	public void completeAttack(int points, Grid.sqType type, Player.dfType defence){
 		// Perform the target's side of an attack
-		// TODO - change to just return points? (all that's really needed)
 		
 		// Use shield
 		if (defence == Player.dfType.dfShield) {

@@ -32,6 +32,7 @@ public class BaseScene extends ScreenAdapter implements InputProcessor{
 	public boolean keyDown(int keycode) {
 		if (keycode == Keys.BACK || keycode == Keys.BACKSPACE){
 			handleBackPress();
+			return true;
 		}
 		return false;
 	}

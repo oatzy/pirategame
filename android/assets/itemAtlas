@@ -5,106 +5,106 @@ filter: Linear,Linear
 repeat: none
 imgSwap
   rotate: false
-  xy: 0, 0
-  size: 85, 85
-  orig: 85, 85
+  xy: 2, 2
+  size: 102, 102
+  orig: 102, 102
   offset: 0, 0
   index: -1
 imgShield
   rotate: false
-  xy: 85, 0
-  size: 85, 85
-  orig: 85, 85
+  xy: 2, 106
+  size: 102, 102
+  orig: 102, 102
   offset: 0, 0
   index: -1
 imgRob
   rotate: false
-  xy: 170, 0
-  size: 85, 85
-  orig: 85, 85
+  xy: 2, 210
+  size: 102, 102
+  orig: 102, 102
   offset: 0, 0
   index: -1
 imgPeek
   rotate: false
-  xy: 255, 0
-  size: 85, 85
-  orig: 85, 85
+  xy: 106, 2
+  size: 102, 102
+  orig: 102, 102
   offset: 0, 0
   index: -1
 imgMirror
   rotate: false
-  xy: 0, 85
-  size: 85, 85
-  orig: 85, 85
+  xy: 106, 106
+  size: 102, 102
+  orig: 102, 102
   offset: 0, 0
   index: -1
 imgKill
   rotate: false
-  xy: 0, 170
-  size: 85, 85
-  orig: 85, 85
+  xy: 106, 210
+  size: 102, 102
+  orig: 102, 102
   offset: 0, 0
   index: -1
 imgGift
   rotate: false
-  xy: 0, 255
-  size: 85, 85
-  orig: 85, 85
+  xy: 210, 2
+  size: 102, 102
+  orig: 102, 102
   offset: 0, 0
   index: -1
 imgDouble
   rotate: false
-  xy: 85, 85
-  size: 85, 85
-  orig: 85, 85
+  xy: 210, 106
+  size: 102, 102
+  orig: 102, 102
   offset: 0, 0
   index: -1
 imgChoose
   rotate: false
-  xy: 170, 85
-  size: 85, 85
-  orig: 85, 85
+  xy: 210, 210
+  size: 102, 102
+  orig: 102, 102
   offset: 0, 0
   index: -1
 imgBomb
   rotate: false
-  xy: 255, 85
-  size: 85, 85
-  orig: 85, 85
+  xy: 314, 2
+  size: 102, 102
+  orig: 102, 102
   offset: 0, 0
   index: -1
 imgBank
   rotate: false
-  xy: 85, 170
-  size: 85, 85
-  orig: 85, 85
+  xy: 314, 106
+  size: 102, 102
+  orig: 102, 102
   offset: 0, 0
   index: -1
 img5000
   rotate: false
-  xy: 85, 255
-  size: 85, 85
-  orig: 85, 85
+  xy: 314, 210
+  size: 102, 102
+  orig: 102, 102
   offset: 0, 0
   index: -1
 img3000
   rotate: false
-  xy: 170, 170
-  size: 85, 85
-  orig: 85, 85
+  xy: 418, 2
+  size: 102, 102
+  orig: 102, 102
   offset: 0, 0
   index: -1
 img200
   rotate: false
-  xy: 255, 170
-  size: 85, 85
-  orig: 85, 85
+  xy: 418, 106
+  size: 102, 102
+  orig: 102, 102
   offset: 0, 0
   index: -1
 img1000
   rotate: false
-  xy: 170, 255
-  size: 85, 85
-  orig: 85, 85
+  xy: 418, 210
+  size: 102, 102
+  orig: 102, 102
   offset: 0, 0
   index: -1

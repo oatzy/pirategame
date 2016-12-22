@@ -1,0 +1,40 @@
+
+specialsTexture.png
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+imgSkull
+  rotate: false
+  xy: 2, 2
+  size: 102, 102
+  orig: 102, 102
+  offset: 0, 0
+  index: -1
+imgShell
+  rotate: false
+  xy: 106, 2
+  size: 102, 102
+  orig: 102, 102
+  offset: 0, 0
+  index: -1
+imgReveal
+  rotate: false
+  xy: 210, 2
+  size: 102, 102
+  orig: 102, 102
+  offset: 0, 0
+  index: -1
+imgHalf
+  rotate: false
+  xy: 314, 2
+  size: 102, 102
+  orig: 102, 102
+  offset: 0, 0
+  index: -1
+img10000
+  rotate: false
+  xy: 418, 2
+  size: 102, 102
+  orig: 102, 102
+  offset: 0, 0
+  index: -1

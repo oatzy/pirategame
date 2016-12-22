@@ -1,18 +1,28 @@
 package com.cavillum.pirategame.objects;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import com.badlogic.gdx.math.MathUtils;
+import com.cavillum.pirategame.PirateGame;
 
 public class Grid {
 	public enum sqType {sqEmpty, sqRob, sqKill, sqGift, sqSwap, sqChoose, 
 		sqShield, sqMirror, sqBomb, sqDouble, sqBank, sqPeek, 
-		sq200, sq1000, sq3000, sq5000};
+		sq200, sq1000, sq3000, sq5000, 
+		sq10000, sqSkull, sqHalf, sqReveal, sqShell};
+		
+	private static List<sqType> _special = new ArrayList<sqType>();
 	
 	private sqType[] _grid;
 	
 	public Grid(){
 		_grid = new sqType[49];
+		
+		_special.add(sqType.sq10000);
+		_special.add(sqType.sqSkull);
+		_special.add(sqType.sqHalf);
 	}
 	
 	public sqType getType(int index){
@@ -69,7 +79,7 @@ public class Grid {
 		return isInteraction(index) && _grid[index] != sqType.sqGift;
 	}
 	
-	public boolean isAttack(Grid.sqType type){
+	public static boolean isAttack(Grid.sqType type){
 		return isInteraction(type) && type != sqType.sqGift;
 	}
 	
@@ -78,9 +88,21 @@ public class Grid {
 		return false;
 	}
 	
-	public boolean isInteraction(Grid.sqType type){
+	public static boolean isInteraction(Grid.sqType type){
 		return (type == sqType.sqGift) || (type == sqType.sqKill) || (type == sqType.sqRob) ||
 				(type == sqType.sqSwap) || (type == sqType.sqPeek);
+	}
+	
+	public static boolean isSpecial(Grid.sqType type){
+		return _special.contains(type);
+	}
+	
+	public static List<Grid.sqType> getSpecialItems(){
+		return _special;
+	}
+	
+	public static sqType getRandomSpecial(){
+		return _special.get(MathUtils.random(_special.size()-1));
 	}
 	
 	public int getRandomIndex(){
@@ -116,7 +138,7 @@ public class Grid {
 		
 		// Populate the board
 		
-		for (int i=0; i<25; i++){
+		/*for (int i=0; i<25; i++){
 			_grid[i] = sqType.sq200;
 		}
 		for (int i=0; i<10; i++){
@@ -129,8 +151,17 @@ public class Grid {
 		for (sqType s : sqType.values()){
 			if (i>37 && i<49) _grid[i] = s;
 			i++;
-		}
+		}*/
+		
+		_grid = PirateGame.levels.buildGrid();
 		
 		shuffle(); //randomise the board
+	}
+	
+	public void generate(boolean isAI){
+		if (isAI){
+			_grid = PirateGame.levels.buildAiGrid();
+			shuffle();
+		} else generate();
 	}
 }

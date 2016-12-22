@@ -6,7 +6,7 @@ import com.cavillum.pirategame.objects.Player;
 
 public class MessageBuilder {
 	
-	public String build(String attacker, String defender, int apoints, int dpoints, Grid.sqType type){
+	public static String build(String attacker, String defender, int apoints, int dpoints, Grid.sqType type){
 		// when a (non-local) player attacks another
 		switch(type){
 		case sqKill:
@@ -18,16 +18,20 @@ public class MessageBuilder {
 		case sqSwap:
 			return attacker+" swapped "+apoints+" points for "+defender+"'s "+dpoints;
 		case sqPeek:
-			if (attacker == "you") return defender+" has "+dpoints+" points";
-			return attacker+" peeked at "+defender+"'s points - "+defender+" has "+dpoints+" points";
+			if (attacker == "You") return defender+" has "+dpoints+" points";
+			return attacker+" peeked at "+defender+"'s points";// - "+defender+" has "+dpoints+" points";
 		case sqChoose:
 			return buildChoose(attacker, apoints); // grid index, not actually points
+		case sqSkull:
+			return "You killed everyone!";
+		case sqShell:
+			return defender+" was killed by the blue shell";
 		default:
 			return "";
 		}
 	}
 	
-	public String build(String attacker, String defender, int apoints, int dpoints,
+	public static String build(String attacker, String defender, int apoints, int dpoints,
 			Grid.sqType type, Player.dfType defence){
 		// When an non-local player attacks a target who uses a defence
 		switch(defence){
@@ -36,18 +40,18 @@ public class MessageBuilder {
 		case dfShield:
 			return shield(attacker, defender, type);
 		case dfMirror:
-			return mirror(attacker, defender, apoints, dpoints, type);
+			return mirror(attacker, defender, apoints, type);
 		default:
 			return "";
 		}
 	}
 	
-	public String build(InteractionData data){
+	public static String build(InteractionData data){
 		return build(data.getSource(), data.getTarget(), data.getSourcePoints(), data.getTargetPoints(),
 				data.getType(), data.getDefenceType());
 	}
 	
-	private String shield(String attacker, String defender, Grid.sqType type){
+	private static String shield(String attacker, String defender, Grid.sqType type){
 		// when a non-local player attacks a player who uses a shield
 		String temp = attacker+" tried to ";
 		switch(type){
@@ -64,12 +68,22 @@ public class MessageBuilder {
 		}
 	}
 	
-	private String mirror(String attacker, String defender, int apoints, int dpoints, Grid.sqType type){
+	private static String mirror(String attacker, String defender, int apoints, Grid.sqType type){
 		// when a non-local player attacks a play who uses a mirror
-		return defender+" used their mirror - "+build(defender, attacker, dpoints, apoints, type);
+		String temp = defender+" used their mirror to ";
+		switch(type){
+		case sqRob:
+			return temp+"rob "+apoints+" from "+attacker;
+		case sqKill:
+			return temp+"kill "+attacker;
+		case sqPeek:
+			return temp+"peek at "+defender+"'s points";
+		default:
+			return "";
+		}
 	}
 	
-	public String buildLocalAttack(String attacker, int apoints, int dpoints, Grid.sqType type){
+	public static String buildLocalAttack(String attacker, int apoints, int dpoints, Grid.sqType type){
 		// Notification for when a player successfully attacks the local player
 		switch(type){
 		case sqKill:
@@ -82,19 +96,21 @@ public class MessageBuilder {
 			return attacker+" swapped "+apoints+" points for your "+dpoints;
 		case sqPeek:
 			return attacker+" peeked at your points";
+		case sqShell:
+			return "You were killed by the blue shell";
 		default:
 			return "";
 		}
 	}
 	
-	public String buildLocalDefence(InteractionData data){
+	public static String buildLocalDefence(InteractionData data){
 		// when a player attacks the local player, who uses a defence
 		switch(data.getDefenceType()){
 		case dfNone:
 			return buildLocalAttack(data.getSource(), data.getSourcePoints(), 
 					data.getTargetPoints(), data.getType());
 		case dfMirror:
-			return build("you", data.getSource(), data.getTargetPoints(),
+			return build("You", data.getSource(), data.getTargetPoints(),
 					data.getSourcePoints(), data.getType());
 		case dfShield:
 		default:
@@ -102,7 +118,7 @@ public class MessageBuilder {
 		}
 	}
 	
-	public String buildOpponentDefence(String defender, int apoints, int dpoints, Grid.sqType type, Player.dfType defence){
+	public static String buildOpponentDefence(String defender, int apoints, int dpoints, Grid.sqType type, Player.dfType defence){
 		// when local player attacks a player who uses a defence
 		switch(defence){
 		case dfShield:
@@ -112,22 +128,22 @@ public class MessageBuilder {
 		case dfNone:
 			// disable this condition for more notifications
 			//if (type == Grid.sqType.sqPeek)	
-			return build("you", defender, apoints, dpoints, type);
+			return build("You", defender, apoints, dpoints, type);
 		default:
 			return "";
 		}
 	}
 	
-	public String buildOpponentDefence(InteractionData data){
+	public static String buildOpponentDefence(InteractionData data){
 		return buildOpponentDefence(data.getTarget(), data.getSourcePoints(), 
 				data.getTargetPoints(), data.getType(), data.getDefenceType());
 	}
 	
-	public String buildDefenceMessage(String attacker, Grid.sqType type){
+	public static String buildDefenceMessage(String attacker, Grid.sqType type){
 		// Notification text is defence selector
 		switch(type){
 		case sqKill:
-			return attacker+" is tring to kill you!";
+			return attacker+" is trying to kill you!";
 		case sqRob:
 			return attacker+" is trying to rob you!";
 		case sqSwap:
@@ -139,7 +155,7 @@ public class MessageBuilder {
 		}
 	}
 	
-	public String buildAttackQuestion(Grid.sqType type){
+	public static String buildAttackQuestion(Grid.sqType type){
 		// Notfication text is attack target selector
 		String message = "Who do you want to";
 		switch(type){
@@ -158,11 +174,11 @@ public class MessageBuilder {
 		}
 	}
 	
-	public String buildChoose(String player, int index){
+	public static String buildChoose(String player, int index){
 		// when a non-local player chooses the next square
 		// converts numerical index into grid reference
-		return (player+" chose the next square - "
-				+Character.toString("ABCDEFG".charAt(index%7))+(1+index/7));
+		return "";//(player+" chose the next square - "
+				//+Character.toString("ABCDEFG".charAt(index%7))+(1+index/7));
 	}
 
 }

@@ -4,8 +4,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.cavillum.pirategame.PirateGame;
 import com.cavillum.pirategame.objects.Grid;
 
 public class GameAssetHelper {
@@ -13,9 +16,11 @@ public class GameAssetHelper {
 	public AssetManager assetManager;
 	
 	private TextureAtlas _itemAtlas;
+	private TextureAtlas _specialAtlas;
 	private TextureAtlas _uiAtlas;
 	
-	public TextureRegion imgBoard;
+	public Skin skin;
+	
 	public TextureRegion img1000;
 	public TextureRegion img200;
 	public TextureRegion img3000;
@@ -32,11 +37,34 @@ public class GameAssetHelper {
 	public TextureRegion imgShield;
 	public TextureRegion imgSwap;
 	
+	public TextureRegion img10000;
+	public TextureRegion imgHalf;
+	public TextureRegion imgShell;
+	public TextureRegion imgSkull;
+	public TextureRegion imgReveal;
+	
 	public TextureRegion selector;
 	public TextureRegion pointsBG;
-	public TextureRegion inventoryBG;
+	public TextureRegion chestBG;
+	public TextureRegion defenceBG;
+	public NinePatch boxBG;
+	public NinePatch sidebarBG; 
+	
+	public TextureRegion notifBtn;
+	public TextureRegion playersBtn;
+	public TextureRegion notifInd;
+	public TextureRegion helpBtn;
+	
+	public TextureRegion bgSlice;
+	public NinePatch gridBg;
+	public TextureRegion gridSq;
+	public TextureRegion burySq;
+	public TextureRegion messageBg;
+	public TextureRegion mBtnBg;
 	
 	public BitmapFont font;
+	public BitmapFont pfont;
+	public BitmapFont tfont;
 	
 	private boolean _loaded=false;
 	
@@ -51,14 +79,25 @@ public class GameAssetHelper {
 	public void load(){
 		// Load Atlas
 		_itemAtlas = new TextureAtlas(Gdx.files.internal("itemAtlas"));
-		_uiAtlas = new TextureAtlas(Gdx.files.internal("uiElements"));
+		_specialAtlas = new TextureAtlas(Gdx.files.internal("specialAtlas"));
+		
+		if (PirateGame.layout.isTablet()){
+			_uiAtlas = new TextureAtlas(Gdx.files.internal("tablet-atlas"));
+			tfont = new BitmapFont(Gdx.files.internal("box-title.fnt"), false);
+			assetManager.load("tablet-bg-slice.png", Texture.class);
+		}
+		
+		else {
+			_uiAtlas = new TextureAtlas(Gdx.files.internal("phone-atlas"));
+		}
+		
+		assetManager.load("mound.png", Texture.class);
+		
+		skin = new Skin(Gdx.files.internal("uiskin.json"));
 		
 		// Load Font
-		font = new BitmapFont(Gdx.files.internal("verdana.fnt"), false);
-		
-		// Load Textures
-		assetManager.load("board.png", Texture.class);
-		//Gdx.app.log("AssetHelper", "assets loaded");
+		font = new BitmapFont(Gdx.files.internal("calibri.fnt"), false);
+		pfont = new BitmapFont(Gdx.files.internal("points.fnt"), false);
 		
 		_loaded = true;
 		
@@ -66,7 +105,6 @@ public class GameAssetHelper {
 	
 	public void unload(){
 		if (_loaded){
-			imgBoard = null;
 			img1000 = null;
 			img200 = null;
 			img3000 = null;
@@ -83,15 +121,42 @@ public class GameAssetHelper {
 			imgShield = null;
 			imgSwap = null;
 			
+			img10000 = null;
+			imgHalf = null;
+			imgSkull = null;
+			imgShell = null;
+			imgReveal = null;
+			
 			selector = null;
 			pointsBG = null;
-			inventoryBG = null;
+			chestBG = null;
+			defenceBG = null;
+			boxBG = null;
+			sidebarBG = null;
 			
-			assetManager.unload("board.png");
+			notifBtn = null;
+			playersBtn = null;
+			notifInd = null;
+			helpBtn = null;
+			
+			bgSlice = null;
+			gridBg = null;
+			gridSq = null;
+			burySq = null;
+			messageBg = null;
+			mBtnBg = null;
+			
+			if (PirateGame.layout.isTablet()){
+				assetManager.unload("tablet-bg-slice.png");
+				tfont.dispose();
+			}
+			assetManager.unload("mound.png");
 			
 			_itemAtlas.dispose();
+			_specialAtlas.dispose();
 			_uiAtlas.dispose();
 			font.dispose();
+			pfont.dispose();
 			
 			//Gdx.app.log("AssetHelper", "Assets unloaded");
 			
@@ -104,7 +169,6 @@ public class GameAssetHelper {
 		assetManager.finishLoading();
 		
 		// Assign
-		imgBoard = new TextureRegion(assetManager.get("board.png", Texture.class));
 		img1000 = _itemAtlas.findRegion("img1000");
 		img200 = _itemAtlas.findRegion("img200");
 		img3000 = _itemAtlas.findRegion("img3000");
@@ -121,9 +185,42 @@ public class GameAssetHelper {
 		imgShield = _itemAtlas.findRegion("imgShield");
 		imgSwap = _itemAtlas.findRegion("imgSwap");
 		
+		img10000 = _specialAtlas.findRegion("img10000");
+		imgHalf = _specialAtlas.findRegion("imgHalf");
+		imgSkull = _specialAtlas.findRegion("imgSkull");
+		imgShell = _specialAtlas.findRegion("imgShell");
+		imgReveal = _specialAtlas.findRegion("imgReveal");
+		
+		gridSq = _uiAtlas.findRegion("grid-sq");
 		selector = _uiAtlas.findRegion("selector");
-		pointsBG = _uiAtlas.findRegion("pointBackground");
-		inventoryBG = _uiAtlas.findRegion("inventoryBackground");
+		notifInd = _uiAtlas.findRegion("notif-indic");
+		
+		if (PirateGame.layout.getType() == LayoutHandler.Layout.Tablet169){
+			notifBtn = _uiAtlas.findRegion("side-bg-1");
+			playersBtn = _uiAtlas.findRegion("side-bg-2");
+			helpBtn = _uiAtlas.findRegion("side-bg-3");
+			sidebarBG = skin.getPatch("rightbox");
+		}
+		else {
+			notifBtn = _uiAtlas.findRegion("notif-btn");
+			playersBtn = _uiAtlas.findRegion("player-btn");
+			helpBtn = _uiAtlas.findRegion("help-btn");
+			mBtnBg = _uiAtlas.findRegion("mbar-btn-bg");
+			messageBg = _uiAtlas.findRegion("message-bar");
+		}
+		
+		if (PirateGame.layout.isTablet()){
+			bgSlice = new TextureRegion(assetManager.get("tablet-bg-slice.png", Texture.class));
+			gridBg = skin.getPatch("grid_bg_patch");
+			boxBG = skin.getPatch("leftbox");
+		}
+		else {
+			pointsBG = _uiAtlas.findRegion("points-bg");
+			chestBG = _uiAtlas.findRegion("chest-bg");
+			defenceBG = _uiAtlas.findRegion("defence-bg");
+		}
+		
+		burySq = new TextureRegion(assetManager.get("mound.png", Texture.class));
 		
 		//Gdx.app.log("AssetHelper", "Assets assigned");
 	}
@@ -160,6 +257,18 @@ public class GameAssetHelper {
 			return imgShield;
 		case sqSwap:
 			return imgSwap;
+		
+		case sq10000:
+			return img10000;
+		case sqHalf:
+			return imgHalf;
+		case sqSkull:
+			return imgSkull;
+		case sqShell:
+			return imgShell;
+		case sqReveal:
+			return imgReveal;
+			
 		default:
 			return null;
 		}

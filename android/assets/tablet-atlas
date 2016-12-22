@@ -1,0 +1,82 @@
+
+tablet-atlas.png
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+side-bg-3
+  rotate: false
+  xy: 2, 2
+  size: 133, 108
+  orig: 133, 108
+  offset: 0, 0
+  index: -1
+side-bg-2
+  rotate: false
+  xy: 2, 112
+  size: 133, 108
+  orig: 133, 108
+  offset: 0, 0
+  index: -1
+side-bg-1
+  rotate: false
+  xy: 137, 2
+  size: 133, 108
+  orig: 133, 108
+  offset: 0, 0
+  index: -1
+selector
+  rotate: false
+  xy: 137, 112
+  size: 102, 102
+  orig: 102, 102
+  offset: 0, 0
+  index: -1
+grid-sq
+  rotate: false
+  xy: 272, 2
+  size: 102, 102
+  orig: 102, 102
+  offset: 0, 0
+  index: -1
+mbar-btn-bg
+  rotate: false
+  xy: 376, 2
+  size: 370, 85
+  orig: 370, 85
+  offset: 0, 0
+  index: -1
+message-bar
+  rotate: false
+  xy: 241, 112
+  size: 10, 85
+  orig: 10, 85
+  offset: 0, 0
+  index: -1
+help-btn
+  rotate: false
+  xy: 272, 106
+  size: 67, 66
+  orig: 67, 66
+  offset: 0, 0
+  index: -1
+player-btn
+  rotate: false
+  xy: 272, 174
+  size: 54, 59
+  orig: 54, 59
+  offset: 0, 0
+  index: -1
+notif-btn
+  rotate: false
+  xy: 376, 89
+  size: 57, 58
+  orig: 57, 58
+  offset: 0, 0
+  index: -1
+notif-indic
+  rotate: false
+  xy: 2, 222
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1

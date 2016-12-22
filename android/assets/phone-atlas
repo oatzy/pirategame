@@ -1,0 +1,82 @@
+
+phone-atlas.png
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+defence-bg
+  rotate: false
+  xy: 2, 2
+  size: 294, 186
+  orig: 294, 186
+  offset: 0, 0
+  index: -1
+chest-bg
+  rotate: false
+  xy: 298, 2
+  size: 286, 144
+  orig: 286, 144
+  offset: 0, 0
+  index: -1
+points-bg
+  rotate: false
+  xy: 586, 2
+  size: 277, 133
+  orig: 277, 133
+  offset: 0, 0
+  index: -1
+mbar-btn-bg
+  rotate: false
+  xy: 586, 137
+  size: 108, 110
+  orig: 108, 110
+  offset: 0, 0
+  index: -1
+message-bar
+  rotate: false
+  xy: 298, 148
+  size: 20, 105
+  orig: 20, 105
+  offset: 0, 0
+  index: -1
+selector
+  rotate: false
+  xy: 320, 148
+  size: 102, 102
+  orig: 102, 102
+  offset: 0, 0
+  index: -1
+grid-sq
+  rotate: false
+  xy: 424, 148
+  size: 102, 102
+  orig: 102, 102
+  offset: 0, 0
+  index: -1
+player-btn
+  rotate: false
+  xy: 696, 137
+  size: 76, 79
+  orig: 76, 79
+  offset: 0, 0
+  index: -1
+help-btn
+  rotate: false
+  xy: 774, 137
+  size: 76, 75
+  orig: 76, 75
+  offset: 0, 0
+  index: -1
+notif-btn
+  rotate: false
+  xy: 865, 2
+  size: 78, 72
+  orig: 78, 72
+  offset: 0, 0
+  index: -1
+notif-indic
+  rotate: false
+  xy: 2, 190
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1

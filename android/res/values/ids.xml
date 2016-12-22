@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_id">1063065080092</string>
+  	
+  	<string name="leaderboard_high_score_easy">CgkInKL3nPgeEAIQEg</string>
+  	<string name="leaderboard_high_score_medium">CgkInKL3nPgeEAIQEw</string>
+	<string name="leaderboard_high_score_hard">CgkInKL3nPgeEAIQFA</string>
+	
+	<string name="leaderboard_normal">CgkInKL3nPgeEAIQKA</string>
+    <string name="leaderboard_choose">CgkInKL3nPgeEAIQKQ</string>
+    <string name="leaderboard_burial">CgkInKL3nPgeEAIQKg</string>
+    <string name="leaderboard_knockout">CgkInKL3nPgeEAIQKw</string>
+	
+	<string name="event_points">CgkInKL3nPgeEAIQEQ</string>
+	<string name="event_wins">CgkInKL3nPgeEAIQIg</string>
+	<string name="event_lost">CgkInKL3nPgeEAIQIw</string>
+  	
+  	<string name="achievement_1_win">CgkInKL3nPgeEAIQHA</string>
+  	<string name="achievement_5_wins">CgkInKL3nPgeEAIQHg</string>
+  	<string name="achievement_10_wins">CgkInKL3nPgeEAIQBw</string>
+  	<string name="achievement_25_wins">CgkInKL3nPgeEAIQCQ</string>
+  	<string name="achievement_50_wins">CgkInKL3nPgeEAIQIA</string>
+  	<string name="achievement_50_lost">CgkInKL3nPgeEAIQJA</string>
+  	
+	<string name="achievement_10000_total">CgkInKL3nPgeEAIQFQ</string>
+	<string name="achievement_20000_total">CgkInKL3nPgeEAIQFg</string>
+	<string name="achievement_50000_total">CgkInKL3nPgeEAIQFw</string>
+	<string name="achievement_100000_total">CgkInKL3nPgeEAIQHQ</string>
+	<string name="achievement_200000_total">CgkInKL3nPgeEAIQGg</string>
+	<string name="achievement_500000_total">CgkInKL3nPgeEAIQGA</string>
+	<string name="achievement_750000_total">CgkInKL3nPgeEAIQGw</string>
+	<string name="achievement_1000000_total">CgkInKL3nPgeEAIQAw</string>
+	<string name="achievement_2000000_total">CgkInKL3nPgeEAIQGQ</string>
+  	
+	<string name="achievement_0_points">CgkInKL3nPgeEAIQCw</string>
+	<string name="achievement_25000_points">CgkInKL3nPgeEAIQHw</string>
+  	<string name="achievement_50000_points">CgkInKL3nPgeEAIQBA</string>
+  	<string name="achievement_100000_points">CgkInKL3nPgeEAIQBQ</string>
+  	
+  	<string name="achievement_250000_robbed">CgkInKL3nPgeEAIQDg</string>
+  	<string name="achievement_500000_robbed">CgkInKL3nPgeEAIQIQ</string>
+  	<string name="achievement_1000000_robbed">CgkInKL3nPgeEAIQDw</string>
+  	
+  	<string name="achievement_online_win">CgkInKL3nPgeEAIQJQ</string> <!-- fresh prince -->
+  	<string name="achievement_knockout_win">CgkInKL3nPgeEAIQLA</string>
+  	<string name="achievement_buried_win">CgkInKL3nPgeEAIQLQ</string>
+    <string name="achievement_choose_win">CgkInKL3nPgeEAIQLg</string>
+    <string name="achievement_played_all">CgkInKL3nPgeEAIQMQ</string>
+  	
+  	<string name="achievement_100_plays">CgkInKL3nPgeEAIQCA</string>
+  	<string name="achievement_10_kill">CgkInKL3nPgeEAIQMw</string>
+  	<string name="achievement_25_kill">CgkInKL3nPgeEAIQNg</string>
+  	<string name="achievement_10_quits">CgkInKL3nPgeEAIQDA</string>
+  	<string name="achievement_25000_swap">CgkInKL3nPgeEAIQNA</string>
+  	<string name="achievement_over_9000">CgkInKL3nPgeEAIQJg</string>
+  	<string name="achievement_konami">CgkInKL3nPgeEAIQBg</string>
+  	<string name="achievement_gift_kill">CgkInKL3nPgeEAIQEA</string>
+  	<string name="achievement_blue_shell">CgkInKL3nPgeEAIQJw</string>
+  	<string name="achievement_random_love">CgkInKL3nPgeEAIQMg</string>
+  	<string name="achievement_found_all_items">CgkInKL3nPgeEAIQNQ</string>
+
+    <string name="achievement_bots_1">CgkInKL3nPgeEAIQMA</string>
+    <string name="achievement_bots_2">CgkInKL3nPgeEAIQLw</string>
+
+</resources>

@@ -1,11 +1,5 @@
 package com.cavillum.pirategame.data;
 
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import com.cavillum.pirategame.objects.Grid;
 import com.cavillum.pirategame.objects.Player;
 import com.cavillum.pirategame.objects.Grid.sqType;
@@ -146,73 +140,5 @@ public class InteractionData {
 			if (d.toString() == defence) _defence = d;
 		}
 	}
-	
-    // convert object to byte array for TBMP API.
-    public byte[] persist() {
-        JSONObject retVal = new JSONObject();
-
-        try {
-            retVal.put("source", _source);
-            retVal.put("target", _target);
-            retVal.put("spoints", _sourcePoints);
-            retVal.put("tpoints", _targetPoints);
-            retVal.put("type", _type.toString());
-            retVal.put("defence", _defence.toString());
-
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        String st = retVal.toString();
-
-        return st.getBytes(Charset.forName("UTF-8"));
-    }
-
-    // Get InteractionData from byte array
-    static public InteractionData unpersist(byte[] byteArray) {
-
-        if (byteArray == null) {
-            return null;
-        }
-
-        String st = null;
-        try {
-            st = new String(byteArray, "UTF-8");
-        } catch (UnsupportedEncodingException e1) {
-            e1.printStackTrace();
-            return null;
-        }
-        
-        InteractionData retVal = new InteractionData();
-
-        try {
-            JSONObject obj = new JSONObject(st);
-
-            if (obj.has("source")) {
-                retVal.setSource(obj.getString("source"));
-            }
-            if (obj.has("target")) {
-                retVal.setTarget(obj.getString("target"));
-            }
-            if (obj.has("spoints")) {
-                retVal.setSourcePoints(obj.getInt("spoints"));
-            }
-            if (obj.has("tpoints")){
-            	retVal.setTargetPoints(obj.getInt("tpoints"));
-            }
-            if (obj.has("type")) {
-                retVal.setType(obj.getString("type"));
-            }
-            if (obj.has("defence")) {
-                retVal.setDefence(obj.getString("defence"));
-            }
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        return retVal;
-    }
 	
 }
